@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
     print_stats_header();
     print_stats("Latency", statistics.latency, format_time_us);
-    print_stats("Req/Sec", statistics.requests, format_metric);
+    //print_stats("Req/Sec", statistics.requests, format_metric);
     if (cfg.latency) print_stats_latency(statistics.latency);
 
     char *runtime_msg = format_time_us(runtime_us);
@@ -572,6 +572,7 @@ static void print_stats(char *name, stats *stats, char *(*fmt)(long double)) {
     print_units(max,   fmt, 9);
     print_units(min, fmt, 9);
     printf("%8.2Lf%%\n", stats_within_stdev(stats, mean, stdev, 1));
+    printf("Minimum Latency is %lu\n", min);
 }
 
 static void print_stats_latency(stats *stats) {

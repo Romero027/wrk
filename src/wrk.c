@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT,  SIG_IGN);
 
-    statistics.latency  = stats_alloc(cfg.timeout * 1000);
+    statistics.latency  = stats_alloc(cfg.timeout * 1000000);
     statistics.requests = stats_alloc(MAX_THREAD_RATE_S);
     thread *threads     = zcalloc(cfg.threads * sizeof(thread));
 
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
     }
 
     uint64_t runtime_us = time_us() - start;
-    long double runtime_s   = runtime_us / 1000000.0;
+    long double runtime_s   = runtime_us / 1000000000.0;
     long double req_per_s   = complete   / runtime_s;
     long double bytes_per_s = bytes      / runtime_s;
 
@@ -274,7 +274,7 @@ static int record_rate(aeEventLoop *loop, long long id, void *data) {
     thread *thread = data;
 
     if (thread->requests > 0) {
-        uint64_t elapsed_ms = (time_us() - thread->start) / 1000;
+        uint64_t elapsed_ms = (time_us() - thread->start) / 1000000;
         uint64_t requests = (thread->requests / (double) elapsed_ms) * 1000;
 
         stats_record(statistics.requests, requests);
@@ -447,10 +447,16 @@ static void socket_readable(aeEventLoop *loop, int fd, void *data, int mask) {
     reconnect_socket(c->thread, c);
 }
 
+// static uint64_t time_us() {
+//     struct timeval t;
+//     gettimeofday(&t, NULL);
+//     return (t.tv_sec * 1000000) + t.tv_usec;
+// }
+
 static uint64_t time_us() {
-    struct timeval t;
-    gettimeofday(&t, NULL);
-    return (t.tv_sec * 1000000) + t.tv_usec;
+    struct timespec t;
+    clock_gettime(CLOCK_REALTIME, &t);
+    return (t.tv_sec * 1000000000) + t.tv_nsec;
 }
 
 static char *copy_url_part(char *url, struct http_parser_url *parts, enum http_parser_url_fields field) {
@@ -576,7 +582,7 @@ static void print_stats(char *name, stats *stats, char *(*fmt)(long double)) {
 }
 
 static void print_stats_latency(stats *stats) {
-    long double percentiles[] = { 50.0, 75.0, 90.0, 99.0 };
+    long double percentiles[] = { 10.0, 25.0, 50.0, 75.0, 90.0, 99.0 };
     printf("  Latency Distribution\n");
     for (size_t i = 0; i < sizeof(percentiles) / sizeof(long double); i++) {
         long double p = percentiles[i];

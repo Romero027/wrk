@@ -171,11 +171,11 @@ int main(int argc, char **argv) {
     }
 
     print_stats_header();
-    print_stats("Latency", statistics.latency, format_time_us);
+    print_stats("Latency", statistics.latency, format_time_ns);
     //print_stats("Req/Sec", statistics.requests, format_metric);
     if (cfg.latency) print_stats_latency(statistics.latency);
 
-    char *runtime_msg = format_time_us(runtime_us);
+    char *runtime_msg = format_time_ns(runtime_us);
 
     printf("  %"PRIu64" requests in %s, %sB read\n", complete, runtime_msg, format_binary(bytes));
     if (errors.connect || errors.read || errors.write || errors.timeout) {
@@ -588,7 +588,7 @@ static void print_stats_latency(stats *stats) {
         long double p = percentiles[i];
         uint64_t n = stats_percentile(stats, p);
         printf("%7.0Lf%%", p);
-        print_units(n, format_time_us, 10);
+        print_units(n, format_time_ns, 10);
         printf("\n");
     }
 }

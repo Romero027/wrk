@@ -14,6 +14,12 @@ typedef struct {
     char *units[];
 } units;
 
+units time_units_ns = {
+    .scale = 1000,
+    .base  = "ns",
+    .units = { "us", "ms", NULL }
+};
+
 units time_units_us = {
     .scale = 1000,
     .base  = "us",
@@ -80,6 +86,15 @@ char *format_binary(long double n) {
 
 char *format_metric(long double n) {
     return format_units(n, &metric_units, 2);
+}
+
+char *format_time_ns(long double n) {
+    units *units = &time_units_ns;
+    if (n >= 1000000000.0) {
+        n /= 1000000000.0;
+        units = &time_units_s;
+    }
+    return format_units(n, units, 2);
 }
 
 char *format_time_us(long double n) {
